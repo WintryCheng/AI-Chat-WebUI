@@ -1,0 +1,3 @@
+- fastapi_sse_localmodel.py：调用本地使用vllm部署的大模型进行问答
+- fastapi_sse_num.py：生成一些随机数字，模拟大模型回复
+- fastapi_sse.py：回复固定的词语，模拟大模型回复
