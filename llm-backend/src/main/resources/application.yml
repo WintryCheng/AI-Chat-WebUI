@@ -1,12 +1,17 @@
- # 智谱 AI 配置
-ai:
-  apiKey: c7db2e5f75aada328709fda667ae7237.zDBFsDXEggBMRnfS
-
 # 服务端口
 server:
-  port: 8081
+  port: 8098
 
 # 本地模型服务地址
 url:
   fastapi: http://127.0.0.1:8000
   flask: ""
+
+spring:
+  application:
+    name: model-service # 服务名称
+  cloud:
+    nacos:
+      server-addr: localhost:8848
+      username: nacos
+      password: nacos

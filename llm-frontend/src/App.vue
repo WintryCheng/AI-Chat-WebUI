@@ -31,7 +31,8 @@ const sendMessage = async () => {
     messages.value.push({ content: inputMessage.value, isSelf: true })
   }
   // 创建 SSE 请求
-  const eventSource = new EventSource('http://localhost:8081/question/local/sse' + `?userMessage=${inputMessage.value}`)
+  // const eventSource = new EventSource('http://localhost:8098/question/webflux' + `?userMessage=${inputMessage.value}`)
+  const eventSource = new EventSource('http://localhost:8098/question/microservice' + `?userMessage=${inputMessage.value}`)
 
   // 连接成功
   eventSource.onopen = function (event) {
