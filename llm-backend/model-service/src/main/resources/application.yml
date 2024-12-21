@@ -11,7 +11,30 @@ spring:
   application:
     name: model-service # 服务名称
   cloud:
+    # nacos注册中心配置
     nacos:
       serverAddr: localhost:8848
       username: nacos
       password: nacos
+  # 数据库配置信息
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/aichat?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: root
+
+# MybatisPlus 配置信息
+mybatis-plus:
+  type-aliases-package: llm/model/modelservice/domain/po # 别名扫描包
+  mapper-locations: "classpath*:/mapper/**/*.xml" # Mapper.xml文件地址，默认值（多表操作时需要用）
+  configuration:
+    map-underscore-to-camel-case: true # 是否开启下划线和驼峰的映射
+    cache-enabled: false # 是否开启二级缓存，一般不开启
+    default-enum-type-handler: com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler # 枚举处理器
+  global-config: # MybatisPlus的全局配置，优先级低于注解配置
+    db-config:
+      id-type: assign_id # id为雪花算法生成
+      update-strategy: not_null # 更新策略：只更新非空字段
+      logic-delete-field: deleted
+      logic-delete-value: true
+      logic-not-delete-value: false

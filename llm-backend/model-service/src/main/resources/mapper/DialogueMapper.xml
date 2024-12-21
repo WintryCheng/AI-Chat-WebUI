@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="llm.model.modelservice.mapper.DialogueMapper">
+
+    <insert id="saveDialogue" parameterType="llm.model.modelservice.domain.po.Dialogue">
+        INSERT INTO `dialogue` (`id`, `question`, `answer`, `last_id`, `deleted`)
+        VALUES (#{id}, #{question}, #{answer}, #{lastId}, #{deleted});
+    </insert>
+
+</mapper>

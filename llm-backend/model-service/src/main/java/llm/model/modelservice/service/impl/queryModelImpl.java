@@ -5,6 +5,8 @@ import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.pojo.Instance;
+import llm.model.modelservice.domain.po.Dialogue;
+import llm.model.modelservice.mapper.DialogueMapper;
 import llm.model.modelservice.service.QueryModel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,11 +15,13 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import reactor.core.publisher.Flux;
 
+import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 
+// TODO 两个方法存在大量重复代码，后面将重复内容抽取出来
 @Slf4j
 @Service
 public class queryModelImpl implements QueryModel {
@@ -34,6 +38,9 @@ public class queryModelImpl implements QueryModel {
     @Value("${spring.cloud.nacos.password}")
     private String nacosPassword;
 
+    @Resource
+    private DialogueMapper dialogueMapper;
+
     /**
      * 根据问题获取模型回答
      *
@@ -46,6 +53,8 @@ public class queryModelImpl implements QueryModel {
         WebClient webClient = WebClient.create(fastapiUrl);
         // 建立 SSE 连接对象，0表示永不超时
         SseEmitter sseEmitter = new SseEmitter(0L);
+        // 保存模型响应数据（使用StringBuilder代替String进行拼接更高效）
+        StringBuilder responseBuilder = new StringBuilder();
 
         Flux<String> stringFlux = webClient
                 .get()
@@ -59,11 +68,10 @@ public class queryModelImpl implements QueryModel {
                 .retrieve()
                 .bodyToFlux(String.class);
 
-        log.info("AI模型回答为: ");
         stringFlux
                 .map(item -> Objects.equals(item, "None") ? "" : item)
                 .doOnNext(item -> {
-                    log.info(item);
+                    responseBuilder.append(item); // 拼接模型响应
                     try {
                         sseEmitter.send(item);
                     } catch (IOException e) {
@@ -71,9 +79,27 @@ public class queryModelImpl implements QueryModel {
                     }
                 })
                 .doOnError((e) -> log.error("sse error: ", e))
-                .doOnComplete(sseEmitter::complete)
+                .doOnComplete(() -> {
+                    try {
+                        sseEmitter.complete();
+                        // 在流完全结束后保存完整的字符串到数据库
+                        Dialogue dialogue = new Dialogue();
+                        dialogue.setQuestion(question);
+                        dialogue.setAnswer(responseBuilder.toString());
+                        dialogue.setLastId(0L);
+                        dialogue.setDeleted("0");
+                        dialogueMapper.saveDialogue(dialogue);
+                        log.info("AI模型回答为: {}", responseBuilder.length());
+                    } catch (Exception e) {
+                        log.error("Error saving response to database: ", e);
+                        try {
+                            sseEmitter.completeWithError(e);
+                        } catch (Exception ex) {
+                            log.error("Error completing emitter with error after database failure: ", ex);
+                        }
+                    }
+                })
                 .subscribe();
-
         return sseEmitter;
     }
 
@@ -107,6 +133,8 @@ public class queryModelImpl implements QueryModel {
         WebClient webClient = WebClient.create("http://" + instance.getIp() + ":" + instance.getPort());
         // 建立 SSE 连接对象，0表示永不超时
         SseEmitter sseEmitter = new SseEmitter(0L);
+        // 保存模型响应数据（使用StringBuilder代替String进行拼接更高效）
+        StringBuilder responseBuilder = new StringBuilder();
 
         Flux<String> stringFlux = webClient
                 .get()
@@ -120,11 +148,10 @@ public class queryModelImpl implements QueryModel {
                 .retrieve()
                 .bodyToFlux(String.class);
 
-        log.info("AI模型回答为: ");
         stringFlux
                 .map(item -> Objects.equals(item, "None") ? "" : item)
                 .doOnNext(item -> {
-                    log.info(item);
+                    responseBuilder.append(item); // 拼接模型响应
                     try {
                         sseEmitter.send(item);
                     } catch (IOException e) {
@@ -132,7 +159,26 @@ public class queryModelImpl implements QueryModel {
                     }
                 })
                 .doOnError((e) -> log.error("sse error: ", e))
-                .doOnComplete(sseEmitter::complete)
+                .doOnComplete(() -> {
+                    try {
+                        sseEmitter.complete();
+                        log.info("AI模型回答为: {}", responseBuilder);
+                        // 在流完全结束后保存完整的字符串到数据库
+                        Dialogue dialogue = new Dialogue();
+                        dialogue.setQuestion(question);
+                        dialogue.setAnswer(responseBuilder.toString());
+                        dialogue.setLastId(0L);
+                        dialogue.setDeleted("0");
+                        dialogueMapper.saveDialogue(dialogue);
+                    } catch (Exception e) {
+                        log.error("Error saving response to database: ", e);
+                        try {
+                            sseEmitter.completeWithError(e);
+                        } catch (Exception ex) {
+                            log.error("Error completing emitter with error after database failure: ", ex);
+                        }
+                    }
+                })
                 .subscribe();
 
         return sseEmitter;
