@@ -1,8 +1,8 @@
-package llm.backend.controller;
+package llm.model.modelservice.controller;
 
 import cn.hutool.core.util.StrUtil;
-import llm.backend.client.ModelClient;
-import llm.backend.service.QueryModel;
+import llm.model.client.ModelClient;
+import llm.model.modelservice.service.QueryModel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

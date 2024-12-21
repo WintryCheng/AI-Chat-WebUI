@@ -1,6 +1,6 @@
-package llm.backend.service.impl;
+package llm.model.modelservice.service.impl;
 
-import llm.backend.service.QueryModel;
+import llm.model.modelservice.service.QueryModel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;

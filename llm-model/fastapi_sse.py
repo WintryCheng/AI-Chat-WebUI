@@ -18,12 +18,32 @@ ip = 'localhost'  # 服务实例的IP地址
 port = 8000  # 服务实例的端口
 
 
-# fastapi启动时将服务注册到Nacos
+# 心跳任务
+async def heartbeat_task():
+    while True:
+        try:
+            # 向Nacos发送心跳
+            response = nacos_client.send_heartbeat(service_name, ip, port, group_name=group_name)
+            print(f"Heartbeat sent. Response: {response}")
+        except Exception as e:
+            print(f"Failed to send heartbeat: {e}")
+        await asyncio.sleep(5)  # 每5秒发送一次心跳
+
+
+# fastapi启动时将服务注册到Nacos，并添加心跳机制进行服务保活
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # 在应用启动时注册服务到Nacos
     nacos_client.add_naming_instance(service_name, ip, port, group_name=group_name)
+    # 创建并启动心跳任务
+    task = asyncio.create_task(heartbeat_task())
     yield
+    # 在应用关闭时从Nacos中注销服务并取消心跳任务
+    task.cancel()
+    try:
+        await task
+    except asyncio.CancelledError:
+        pass
     # 在应用关闭时从Nacos中注销服务
     nacos_client.remove_naming_instance(service_name, ip, port, group_name=group_name)
 

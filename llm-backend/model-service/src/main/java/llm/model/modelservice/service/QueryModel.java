@@ -1,4 +1,4 @@
-package llm.backend.service;
+package llm.model.modelservice.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;

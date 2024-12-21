@@ -1,11 +1,10 @@
 # 服务端口
 server:
-  port: 8098
+  port: 8081
 
 # 本地模型服务地址
 url:
   fastapi: http://127.0.0.1:8000
-  flask: ""
 
 spring:
   application:

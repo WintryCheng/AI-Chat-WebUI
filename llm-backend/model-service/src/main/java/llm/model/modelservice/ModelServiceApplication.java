@@ -1,15 +1,15 @@
-package llm.backend;
+package llm.model.modelservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
-@EnableFeignClients
+@EnableFeignClients(basePackages = "llm.model.client")
 @SpringBootApplication
-public class LlmBackendApplication {
+public class ModelServiceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(LlmBackendApplication.class, args);
+        SpringApplication.run(ModelServiceApplication.class, args);
     }
 
 }
