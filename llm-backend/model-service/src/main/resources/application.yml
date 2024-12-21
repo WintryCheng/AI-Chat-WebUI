@@ -5,12 +5,13 @@ server:
 # 本地模型服务地址
 url:
   fastapi: http://127.0.0.1:8000
+  nacos: http://127.0.0.1:8848
 
 spring:
   application:
     name: model-service # 服务名称
   cloud:
     nacos:
-      server-addr: localhost:8848
+      serverAddr: localhost:8848
       username: nacos
       password: nacos

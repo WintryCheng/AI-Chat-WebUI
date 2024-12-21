@@ -1,6 +1,6 @@
 package llm.model.modelservice.controller;
 
-import cn.hutool.core.util.StrUtil;
+import com.alibaba.nacos.api.exception.NacosException;
 import llm.model.client.ModelClient;
 import llm.model.modelservice.service.QueryModel;
 import lombok.extern.slf4j.Slf4j;
@@ -32,10 +32,6 @@ public class MyController {
     @GetMapping("/webflux")
     public SseEmitter webflux(@RequestParam(value = "userMessage", required = false) String userMessage) {
         log.info("用户请求数据为: {}, 调用本地大模型进行问答", userMessage);
-        // 提问内容为空，不请求模型
-        if (StrUtil.isBlank(userMessage)) {
-            return null;
-        }
         return queryModel.queryByQuestion(userMessage);
     }
 
@@ -51,13 +47,14 @@ public class MyController {
     }
 
     /**
-     * TODO 调用nacos上注册的服务，根据用户提问流式获取模型回复（先查找ip地址再进行调用，此时是流式返回结果）
+     * 调用nacos上注册的服务，根据用户提问流式获取模型回复（先查找ip地址再进行调用，此时是流式返回结果）
      *
      * @return
      */
     @GetMapping("/microserviceWebflux")
-    public String microserviceWebflux() {
-        return modelClient.getStreamData();
+    public SseEmitter microserviceWebflux(@RequestParam(value = "userMessage", required = false) String userMessage) throws NacosException {
+        log.info("用户请求数据为: {}, 调用本地大模型进行问答", userMessage);
+        return queryModel.queryByMsQuestion(userMessage);
     }
 
 }
